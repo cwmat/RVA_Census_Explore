@@ -34,11 +34,11 @@ require([
 
      var renderer = new SimpleRenderer({
        symbol: defaultSym,
-       label: "% population in poverty by county",
+       label: "Total population",
        visualVariables: [{
          type: "color",
-         field: "POP_POVERTY",
-         normalizationField: "TOTPOP_CY",
+         field: "Persons_Total_2010",
+         // normalizationField: "TOTPOP_CY",
          stops: [
          {
            value: 0.1,
@@ -54,21 +54,15 @@ require([
      });
 
      var povLyr = new FeatureLayer({
-       url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/counties_politics_poverty/FeatureServer/0",
+       url: "http://services7.arcgis.com/Y6IWUUpsKIrGCOdj/arcgis/rest/services/RVA_Block_Groups/FeatureServer/0",
        renderer: renderer,
        outFields: ["*"],
        popupTemplate: {
-         title: "{COUNTY}, {STATE}",
-         content: "{POP_POVERTY} of {TOTPOP_CY} people live below the poverty line.",
+         title: "{GISJOIN}",
+         content: "{COUNTY} thats where we at!",
          fieldInfos: [
          {
-           fieldName: "POP_POVERTY",
-           format: {
-             digitSeparator: true,
-             places: 0
-           }
-         }, {
-           fieldName: "TOTPOP_CY",
+           fieldName: "COUNTY",
            format: {
              digitSeparator: true,
              places: 0
@@ -101,7 +95,7 @@ require([
        layerInfos: [
        {
          layer: povLyr,
-         title: "Poverty in the southeast U.S."
+         title: "Testing RVA Census"
        }]
      });
 
