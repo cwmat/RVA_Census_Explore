@@ -4,11 +4,15 @@ require([
      "esri/layers/FeatureLayer",
      "esri/renderers/SimpleRenderer",
      "esri/symbols/SimpleFillSymbol",
+     "esri/symbols/SimpleLineSymbol",
+     "esri/Color",
+     "esri/Graphic",
      "esri/widgets/Legend",
+     "dojo/on",
+     "dojo/dom",
      "dojo/domReady!"
    ], function(
-     Map, MapView, FeatureLayer, SimpleRenderer, SimpleFillSymbol, Legend
-   ) {
+     Map, MapView, FeatureLayer, SimpleRenderer, SimpleFillSymbol, SimpleLineSymbol, Color, Graphic, Legend, on, dom) {
 
      var defaultSym = new SimpleFillSymbol({
        outline: {
@@ -41,12 +45,12 @@ require([
          // normalizationField: "TOTPOP_CY",
          stops: [
          {
-           value: 0.1,
+           value: 515,
            color: "#FFFCD4",
            label: "<10%"
          },
          {
-           value: 0.3,
+           value: 2800,
            color: "#350242",
            label: ">30%"
          }]
@@ -57,31 +61,46 @@ require([
        url: "http://services7.arcgis.com/Y6IWUUpsKIrGCOdj/arcgis/rest/services/RVA_Block_Groups/FeatureServer/0",
        renderer: renderer,
        outFields: ["*"],
-       popupTemplate: {
-         title: "{GISJOIN}",
-         content: "{COUNTY} thats where we at!",
-         fieldInfos: [
-         {
-           fieldName: "COUNTY",
-           format: {
-             digitSeparator: true,
-             places: 0
-           }
-         }]
-       },
-       definitionExpression: defExp.join(" OR ") // only display counties from states in defExp
+      //  popupTemplate: {
+      //    title: "{COUNTY}",
+      //    content: "test",
+      //    fieldInfos: [
+      //    {
+      //      fieldName: "COUNTY",
+      //      format: {
+      //        digitSeparator: true,
+      //        places: 0
+      //      }
+      //    }]
+      //  },
+       // definitionExpression: defExp.join(" OR ") // only display counties from states in defExp
      });
+
+     var highlightSymbol = new SimpleFillSymbol(
+          SimpleFillSymbol.STYLE_SOLID,
+          new SimpleLineSymbol(
+            SimpleLineSymbol.STYLE_SOLID,
+            new Color([255,0,0]), 3
+          ),
+          new Color([125,125,125,0.35])
+      );
 
      var map = new Map({
        basemap: "gray",
        layers: [povLyr]
      });
 
+    //close the dialog when the mouse leaves the highlight graphic
+    map.on("load", function(){
+      map.graphics.enableMouseEvents();
+      map.graphics.on("mouse-out", closeDialog);
+    });
+
      var view = new MapView({
        container: "viewDiv",
        map: map,
-       center: [-85.050200, 33.125524],
-       zoom: 6
+       center: [-77.436754, 37.539755],
+       zoom: 11
      });
 
      /******************************************************************
@@ -90,15 +109,46 @@ require([
       *
       ******************************************************************/
 
-     var legend = new Legend({
-       view: view,
-       layerInfos: [
-       {
-         layer: povLyr,
-         title: "Testing RVA Census"
-       }]
-     });
+    //  var legend = new Legend({
+    //    view: view,
+    //    layerInfos: [
+    //    {
+    //      layer: povLyr,
+    //      title: "Testing RVA Census"
+    //    }]
+    //  });
 
     // view.ui.add(legend, "top-right");
+
+    //listen for when the onMouseOver event fires on the countiesGraphicsLayer
+    //when fired, create a new graphic with the geometry from the event.graphic and add it to the maps graphics layer
+    // povLyr.on("mouse-over", function(evt) {
+    //   var highlightGraphic = new Graphic(evt.graphic.geometry, highlightSymbol);
+    //   map.graphics.add(highlightGraphic);
+    //
+    //   // dialog.setContent(content);
+    //
+    //   // domStyle.set(dialog.domNode, "opacity", 0.85);
+    //   // dijitPopup.open({
+    //   //   popup: dialog,
+    //   //   x: evt.pageX,
+    //   //   y: evt.pageY
+    //   // });
+    // });
+
+  view.on("click", function(event) {
+    view.hitTest(event.screenPoint).then(function(response) {
+      var graphics = response.results;
+      graphics.forEach(function(graphic) {
+        console.log(graphic);
+      });
+    });
+  });
+
+    // function closeDialog() {
+    //   map.graphics.clear();
+    //   console.log("sgetti");
+    //   // dijitPopup.close(dialog);
+    // }
 
    });
